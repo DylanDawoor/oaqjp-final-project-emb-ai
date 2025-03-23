@@ -1,12 +1,22 @@
-let RunSentimentAnalysis = ()=>{
-    textToAnalyze = document.getElementById("textToAnalyze").value;
+function RunSentimentAnalysis() {
+    var textToAnalyze = document.getElementById("textToAnalyze").value;
 
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("system_response").innerHTML = xhttp.responseText;
-        }
-    };
-    xhttp.open("GET", "emotionDetector?textToAnalyze"+"="+textToAnalyze, true);
-    xhttp.send();
+    fetch(`/emotionDetector?textToAnalyze=${encodeURIComponent(textToAnalyze)}`)
+        .then(response => {
+            // Se la risposta non è ok, leggila come testo per visualizzare il messaggio di errore
+            if (!response.ok) {
+                return response.text().then(errorMessage => {
+                    document.getElementById("system_response").innerText = errorMessage;
+                    throw new Error("Error: " + response.status);
+                });
+            }
+            return response.text();
+        })
+        .then(data => {
+            // Se la risposta è OK, mostra il risultato
+            document.getElementById("system_response").innerText = data;
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
 }
